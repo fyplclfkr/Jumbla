@@ -1,2 +1,13 @@
 /tests/
 /app/AppData/
+/tests
+/.idea
+/config
+/jumbla.build
+/jumbla.dist
+/.venv
+/doc
+/output
+# 忽略python缓存文件
+*/__pycache__
+*.py[cod]

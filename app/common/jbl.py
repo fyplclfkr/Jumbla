@@ -1,0 +1,131 @@
+# -*- coding: utf-8 -*-
+import json
+import sys
+from datetime import date, datetime
+
+from PySide6.QtCore import QTime
+
+sys.path.append(r'C:\CgTeamWork_v7\bin\base')
+import cgtw2
+
+USER_NAME = ''
+USER_ID = ''
+ACCOUNT_LIST = {}
+CLOCK_IN_TIME = ''
+
+
+# DAILY_TIMELOG = ''
+
+
+def get_project_list():
+    """获取所有启用的项目"""
+    try:
+        field_sign_list = ['project.entity', 'project.full_name', 'project.id', 'project.database']
+        filter_list = [['project.status', '=', 'Active']]
+        id_list = cgtw2.tw().project.get_id(filter_list, limit="5000", start_num="")
+        project_list = cgtw2.tw().project.get(id_list, field_sign_list, limit="5000", order_sign_list=[])
+        return project_list
+    except Exception as e:
+        print(e)
+        return []
+
+
+def get_clock_in_time(user_name):
+    """获取上班打卡时间"""
+    outputUrl = r'//nas01/shares/dev/jumbla/attendance/'
+    try:
+        with open(outputUrl + str(date.today()) + '.json', 'r', encoding='utf-8') as f:
+            json_data = json.load(f)
+            for item in json_data:
+                if item['姓名'] == user_name:
+                    if item['上班1打卡时间'] is None:
+                        return None
+                    else:
+                        return item['上班1打卡时间']
+            # print('没有人员记录')
+    except:
+        return None
+
+
+def get_daily_timelog(_date):
+    """获取当前cgtw登录用户某天的工时,日期格式为:2024-01-09"""
+    try:
+        _time_log = []
+        _project = get_project_list()
+        for i in _project:
+            db = i['project.database']
+            field_list = ['date', 'tag', 'artist', 'project', 'link_entity', 'text', 'start_time', 'end_time',
+                          'use_time']
+            filter_list = [['account_id', '=', USER_ID], ['date', 'start', _date]]
+            id_list = cgtw2.tw().timelog.get_id(db, filter_list, limit="5000")
+            _time_log.extend(cgtw2.tw().timelog.get(db, id_list, field_list, limit="5000", order_list=['end_time']))
+        _time_log = sorted(_time_log, key=lambda x: datetime.strptime(x['end_time'], '%Y-%m-%d %H:%M:%S'))
+        return _time_log
+    except Exception as e:
+        print(e)
+        return []
+
+
+def get_my_task(db):
+    """获取我的任务列表"""
+    _module = ['asset', 'shot']
+    _task_list = []
+    try:
+        for module in _module:
+            if module == 'asset':
+                field_sign_list = ['asset.entity', 'task.account', 'task.artist', 'task.entity', 'task.url',
+                                   'task.expected_time', 'task.total_use_time', 'task.status', 'task.module',
+                                   'task.link_id', 'task.id']
+                # field_sign_list = t_tw.task.fields(db, module)
+                filter_list = [['task.account', 'has', USER_NAME]]
+                id_list = cgtw2.tw().task.get_id(
+                    db, module, filter_list, limit="5000", start_num="")
+                task_list = cgtw2.tw().task.get(
+                    db, module, id_list, field_sign_list, limit="5000", order_sign_list=[])
+                _task_list.extend(task_list)
+            elif module == 'shot':
+                field_sign_list = ['shot.entity', 'task.account', 'task.artist', 'task.entity', 'task.url',
+                                   'task.expected_time', 'task.total_use_time', 'task.status', 'task.module',
+                                   'task.link_id', 'task.id']
+                # field_sign_list = t_tw.task.fields(db, module)
+                filter_list = [['task.account', 'has', USER_NAME]]
+                id_list = cgtw2.tw().task.get_id(db, module, filter_list, limit="5000", start_num="")
+                task_list = cgtw2.tw().task.get(db, module, id_list, field_sign_list, limit="5000", order_sign_list=[])
+                _task_list.extend(task_list)
+        return _task_list
+    except Exception as e:
+        print(e)
+        return []
+
+
+def count_working_hours(start_time, end_time):
+    seconds_diff = start_time.secsTo(end_time)
+    print(start_time.hour(), start_time.minute())
+    print(end_time.hour(), end_time.minute())
+    # 减去休息时间
+    if start_time.hour() < 12 and end_time.hour() >= 13:
+        seconds_diff -= 3600
+        print(1)
+    elif start_time.hour() == 12 and start_time.minute() == 0 and end_time.hour() >= 13:
+        seconds_diff -= 3600
+        print(2)
+    elif start_time.hour() < 12 and end_time.hour() == 12 and end_time.minute() > 0:
+        seconds_diff -= end_time.minute() * 60
+        print(3)
+    elif start_time.hour() == 12 and start_time.minute() > 0 and end_time.hour() >= 13:
+        seconds_diff -= start_time.minute() * 60
+        print(4)
+    time_diff = QTime(0, 0).addSecs(seconds_diff)
+    formatted_time_diff = time_diff.toString('hh:mm')
+    return formatted_time_diff
+
+
+try:
+    USER_NAME = cgtw2.tw().login.account()
+    USER_ID = cgtw2.tw().login.account_id()
+    ACCOUNT_LIST = cgtw2.tw().account.get([USER_ID], cgtw2.tw().account.fields(), limit='5000', order_sign_list=[])[
+        0]
+    CLOCK_IN_TIME = get_clock_in_time(ACCOUNT_LIST.get('account.name'))
+    # DAILY_TIMELOG = get_daily_timelog(date.today().strftime("%Y-%m-%d"))
+except Exception as e:
+    print(e)
