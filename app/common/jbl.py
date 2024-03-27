@@ -98,26 +98,32 @@ def get_my_task(db):
         return []
 
 
-def count_working_hours(start_time, end_time):
+def calculate_work_time(start_time, end_time):
+    # 计算时间差
     seconds_diff = start_time.secsTo(end_time)
-    print(start_time.hour(), start_time.minute())
-    print(end_time.hour(), end_time.minute())
-    # 减去休息时间
-    if start_time.hour() < 12 and end_time.hour() >= 13:
-        seconds_diff -= 3600
-        print(1)
-    elif start_time.hour() == 12 and start_time.minute() == 0 and end_time.hour() >= 13:
-        seconds_diff -= 3600
-        print(2)
-    elif start_time.hour() < 12 and end_time.hour() == 12 and end_time.minute() > 0:
-        seconds_diff -= end_time.minute() * 60
-        print(3)
-    elif start_time.hour() == 12 and start_time.minute() > 0 and end_time.hour() >= 13:
-        seconds_diff -= start_time.minute() * 60
-        print(4)
-    time_diff = QTime(0, 0).addSecs(seconds_diff)
-    formatted_time_diff = time_diff.toString('hh:mm')
-    return formatted_time_diff
+
+    if start_time.date() == end_time.date():
+        # 扣除午休时间，同一天
+        if start_time.time().hour() < 12 and end_time.time().hour() >= 13:
+            seconds_diff -= 3600
+        elif start_time.time().hour() == 12 and start_time.time().minute() == 0 and end_time.time().hour() >= 13:
+            seconds_diff -= 3600
+        elif start_time.time().hour() < 12 and end_time.time().hour() == 12 and end_time.time().minute() > 0:
+            seconds_diff -= end_time.time().minute() * 60
+        elif start_time.time().hour() == 12 and start_time.time().minute() > 0 and end_time.time().hour() >= 13:
+            seconds_diff -= start_time.time().minute() * 60
+        time_diff = QTime(0, 0).addSecs(seconds_diff)
+        formatted_time_diff = time_diff.toString('hh:mm')
+        return formatted_time_diff
+    else:
+        # 扣除午休时间，跨天
+        if end_time.time().hour() >= 13:
+            seconds_diff -= 3600
+        elif end_time.time().hour() == 12 and end_time.time().minute() > 0:
+            seconds_diff -= end_time.time().minute() * 60
+        time_diff = QTime(0, 0).addSecs(seconds_diff)
+        formatted_time_diff = time_diff.toString('hh:mm')
+        return formatted_time_diff
 
 
 try:

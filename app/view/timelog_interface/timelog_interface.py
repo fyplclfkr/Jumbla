@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import date
+from datetime import date, datetime
 from importlib import reload
 
 from PySide6.QtCore import Qt, QTime, QDateTime, QDate
@@ -295,7 +295,14 @@ class TimeLogInterface(QWidget):
         except:
             _link_id = ''
         # 计算工时
-        formatted_time_diff = jbl.count_working_hours(_start, _end)
+        formatted_time_diff = jbl.calculate_work_time(_start, _end)
+        _start_time = _start.strftime("%Y-%m-%d %H:%M:%S")
+        _end_time = _end.strftime("%Y-%m-%d %H:%M:%S")
+        _dict = {'db': _db, 'link_id': _link_id,
+                 'module': _module, 'module_type': _module_type,
+                 'use_time': formatted_time_diff,
+                 'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                 'start_time': _start_time, 'end_time': _end_time, 'text': '项目工时'}
 
     def clear_task_info(self):
         # 清除任务信息
