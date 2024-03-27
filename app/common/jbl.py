@@ -102,6 +102,9 @@ def calculate_work_time(start_time, end_time):
     # 计算时间差
     seconds_diff = start_time.secsTo(end_time)
 
+    if start_time.time().hour() == 12 and end_time.time().hour() == 12:
+        return '00:00'
+
     if start_time.date() == end_time.date():
         # 扣除午休时间，同一天
         if start_time.time().hour() < 12 and end_time.time().hour() >= 13:
@@ -111,7 +114,7 @@ def calculate_work_time(start_time, end_time):
         elif start_time.time().hour() < 12 and end_time.time().hour() == 12 and end_time.time().minute() > 0:
             seconds_diff -= end_time.time().minute() * 60
         elif start_time.time().hour() == 12 and start_time.time().minute() > 0 and end_time.time().hour() >= 13:
-            seconds_diff -= start_time.time().minute() * 60
+            seconds_diff -= (60 - start_time.time().minute()) * 60
         time_diff = QTime(0, 0).addSecs(seconds_diff)
         formatted_time_diff = time_diff.toString('hh:mm')
         return formatted_time_diff

@@ -26,7 +26,7 @@ class Header(QWidget):
         self.lastTimeLabel = QLabel('无')
 
         self.todayLabel = QLabel('今日工时：')
-        self.todayTimeLabel = QLabel('0')
+        self.todayTimeLabel = QLabel('0.0')
 
         self.refresh_button = PrimaryToolButton(FIF.SYNC)
         self.refresh_button.setFixedSize(32, 32)

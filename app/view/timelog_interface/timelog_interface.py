@@ -102,7 +102,8 @@ class TimeLogInterface(QWidget):
 
         def handle_timelog(result):
             self.DAILY_TIMELOG = result
-            try:
+            print(self.DAILY_TIMELOG)
+            if self.DAILY_TIMELOG:
                 # 上次打卡时间
                 self.header.lastTimeLabel.setText(self.DAILY_TIMELOG[-1].get('end_time'))
                 # 今日工时
@@ -110,8 +111,8 @@ class TimeLogInterface(QWidget):
                 for item in self.DAILY_TIMELOG:
                     _today_use_time += int(item['use_time'])
                 self.header.todayTimeLabel.setText('{:.1f}'.format(_today_use_time / 3600))
-            except:
-                pass
+            else:
+                self.header.todayTimeLabel.setText('0.0')
 
         self.get_timelog_thread.getTimelogFinished.connect(handle_timelog)
         self.get_timelog_thread.getTimelogFinished.connect(self.set_sub_widget)
@@ -230,7 +231,6 @@ class TimeLogInterface(QWidget):
         self.subWidget.time_slider.setMinimum(_start.hour() * 60 + _start.minute())
         self.subWidget.time_slider.setMaximum(1439)
         self.subWidget.time_slider.setValue(_end.hour() * 60 + _end.minute())
-        print(self.subWidget.time_slider.value())
 
     def on_task_search_text_changed(self):
         filter_text = self.project_taskList.taskSearch.text()
@@ -247,17 +247,17 @@ class TimeLogInterface(QWidget):
         _now = QDateTime.currentDateTime()
         _start = self.subWidget.start_time_picker.dateTime()
         _end = self.subWidget.end_time_picker.dateTime()
-        if _end > _now:
-            InfoBar.error(
-                title='结束时间未到，请重新设置',
-                content='',
-                orient=Qt.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.TOP,
-                duration=3000,
-                parent=self
-            )
-            return
+        # if _end > _now:
+        #     InfoBar.error(
+        #         title='结束时间未到，请重新设置',
+        #         content='',
+        #         orient=Qt.Horizontal,
+        #         isClosable=True,
+        #         position=InfoBarPosition.TOP,
+        #         duration=3000,
+        #         parent=self
+        #     )
+        #     return
         if _start >= _end:
             InfoBar.error(
                 title='结束时间小于等于开始时间，请重新设置',
@@ -314,7 +314,6 @@ class TimeLogInterface(QWidget):
                  'use_time': formatted_time_diff,
                  'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                  'start_time': _start_time, 'end_time': _end_time, 'text': '项目工时'}
-        print(_dict)
         if any(value == '' for value in _dict.values()):
             InfoBar.warning(
                 title='请先选择项目|任务|打卡时间',

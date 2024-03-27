@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 
-from PySide6.QtCore import Qt, QDateTime, Slot, QTime, QDate
+from PySide6.QtCore import Qt, QDateTime, QTime, QDate
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QHBoxLayout
 from qfluentwidgets import BodyLabel, PrimaryPushButton, Slider, DateTimeEdit
 
@@ -85,20 +85,42 @@ class SubWidget(QWidget):
     def __connectSignalToSlot(self):
         self.time_slider.valueChanged.connect(self.on_slider_changed)
         self.now_button.clicked.connect(self.on_now_button_clicked)
+        self.add_30min_button.clicked.connect(self.on_add_30min_button_clicked)
+        self.add_1H_button.clicked.connect(self.on_add_1H_button_clicked)
+        self.add_2H_button.clicked.connect(self.on_add_2H_button_clicked)
+        # self.end_time_picker.dateTimeChanged.connect(self.on_end_time_changed)
 
-    @Slot()
     def on_now_button_clicked(self):
         _time = QDateTime.currentDateTime()
         self.end_time_picker.setDateTime(_time)
         self.time_slider.setValue(_time.time().hour() * 60 + _time.time().minute())
 
-    @Slot()
+    def on_add_30min_button_clicked(self):
+        _time = self.end_time_picker.dateTime()
+        self.end_time_picker.setDateTime(_time.addSecs(1800))
+        self.time_slider.setValue(self.time_slider.value() + 30)
+
+    def on_add_1H_button_clicked(self):
+        _time = self.end_time_picker.dateTime()
+        self.end_time_picker.setDateTime(_time.addSecs(3600))
+        self.time_slider.setValue(self.time_slider.value() + 60)
+
+    def on_add_2H_button_clicked(self):
+        _time = self.end_time_picker.dateTime()
+        print(_time)
+        self.end_time_picker.setDateTime(_time.addSecs(7200))
+        self.time_slider.setValue(self.time_slider.value() + 120)
+
     def on_slider_changed(self, value):
         total_minutes = value
         hours = total_minutes // 60
         minutes = total_minutes % 60
         time = QTime(hours, minutes)
         self.end_time_picker.setDateTime(QDateTime(QDate.currentDate(), time))
+
+    def on_end_time_changed(self, time: QDateTime):
+        total_minutes = time.time().hour() * 60 + time.time().minute()
+        self.time_slider.setValue(total_minutes)
 
 
 if __name__ == '__main__':
