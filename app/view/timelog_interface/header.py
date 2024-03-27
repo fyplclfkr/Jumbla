@@ -23,7 +23,7 @@ class Header(QWidget):
         self.clockInTimeLabel = QLabel('未打卡')
 
         self.lastLabel = QLabel('最后打卡时间:')
-        self.lastTimeLabel = QLabel('    ')
+        self.lastTimeLabel = QLabel('无')
 
         self.todayLabel = QLabel('今日工时：')
         self.todayTimeLabel = QLabel('0')

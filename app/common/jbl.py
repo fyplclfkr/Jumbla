@@ -126,6 +126,33 @@ def calculate_work_time(start_time, end_time):
         return formatted_time_diff
 
 
+def sub_time_log(_dict):
+    """提交工时"""
+    try:
+        _timelog_id = cgtw2.tw().timelog.create(_dict['db'], _dict['link_id'], _dict['module'], _dict['module_type'],
+                                                _dict['use_time'], _dict['date'], _dict['text'], tag='')
+
+        return cgtw2.tw().timelog.set(_dict['db'], _timelog_id,
+                                      {'start_time': _dict['start_time'], 'end_time': _dict['end_time']})
+    except Exception as e:
+        print(e)
+
+
+def reload_task_info(db, module, id):
+    if module == 'shot':
+        field_sign_list = ['shot.entity', 'task.account', 'task.artist', 'task.entity', 'task.url',
+                           'task.expected_time', 'task.total_use_time', 'task.status', 'task.module', 'task.link_id',
+                           'task.id']
+        task = cgtw2.tw().task.get(db, module, id, field_sign_list, limit="5000", order_sign_list=[])
+        return task
+    elif module == 'asset':
+        field_sign_list = ['asset.entity', 'task.account', 'task.artist', 'task.entity', 'task.url',
+                           'task.expected_time', 'task.total_use_time', 'task.status', 'task.module', 'task.link_id',
+                           'task.id']
+        task = cgtw2.tw().task.get(db, module, id, field_sign_list, limit="5000", order_sign_list=[])
+        return task
+
+
 try:
     USER_NAME = cgtw2.tw().login.account()
     USER_ID = cgtw2.tw().login.account_id()

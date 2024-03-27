@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import sys
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QGridLayout, QLabel, QHBoxLayout
-from qfluentwidgets import BodyLabel, PrimaryPushButton, Slider, CompactDateTimeEdit
+from PySide6.QtCore import Qt, QDateTime, Slot, QTime, QDate
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QHBoxLayout
+from qfluentwidgets import BodyLabel, PrimaryPushButton, Slider, DateTimeEdit
 
 
 class SubWidget(QWidget):
@@ -19,13 +19,15 @@ class SubWidget(QWidget):
 
         self.start_time_label = BodyLabel()
         self.start_time_label.setText('开始时间')
-        self.start_time_picker = CompactDateTimeEdit()
+        self.start_time_picker = DateTimeEdit()
         self.start_time_picker.setEnabled(False)
 
         self.end_time_label = BodyLabel()
         self.end_time_label.setText('结束时间')
-        self.end_time_picker = CompactDateTimeEdit()
+        self.end_time_picker = DateTimeEdit()
         # self.end_time_picker.setEnabled(False)
+
+        self.workTimeLabel = BodyLabel('本次工时：00:00')
 
         self.now_button = PrimaryPushButton('NOW')
         self.add_30min_button = PrimaryPushButton('+30M')
@@ -54,30 +56,49 @@ class SubWidget(QWidget):
 
         self.mainLayout.addWidget(self.titleLabel)
 
-        self.layout = QGridLayout()
-        self.mainLayout.addLayout(self.layout)
-        self.layout.setVerticalSpacing(12)
-        self.layout.setHorizontalSpacing(12)
+        self.bodyLayout = QVBoxLayout()
+        self.bodyLayout.setSpacing(12)
+        self.mainLayout.addLayout(self.bodyLayout)
 
-        self.layout.addWidget(self.start_time_label, self.layout.rowCount(), 0)
-        self.layout.addWidget(self.start_time_picker, self.layout.rowCount() - 1, 1, 1, self.layout.columnCount())
+        self.body1 = QHBoxLayout()
+        self.bodyLayout.addLayout(self.body1)
+        self.body1.addWidget(self.start_time_label)
+        self.body1.addWidget(self.start_time_picker)
 
-        self.layout.addWidget(self.end_time_label, self.layout.rowCount(), 0)
-        self.layout.addWidget(self.end_time_picker, self.layout.rowCount() - 1, 1)
+        self.body2 = QHBoxLayout()
+        self.bodyLayout.addLayout(self.body2)
+        self.body2.addWidget(self.end_time_label)
+        self.body2.addWidget(self.end_time_picker)
 
-        self.add_button_layout = QHBoxLayout()
-        self.add_button_layout.addWidget(self.now_button)
-        self.add_button_layout.addWidget(self.add_30min_button)
-        self.add_button_layout.addWidget(self.add_1H_button)
-        self.add_button_layout.addWidget(self.add_2H_button)
-        self.layout.addLayout(self.add_button_layout, self.layout.rowCount(), 0, 1, self.layout.columnCount())
+        self.bodyLayout.addWidget(self.workTimeLabel)
 
-        self.layout.addWidget(self.time_slider, self.layout.rowCount(), 0, 1, self.layout.columnCount())
+        self.body3 = QHBoxLayout()
+        self.bodyLayout.addLayout(self.body3)
+        self.body3.addWidget(self.now_button)
+        self.body3.addWidget(self.add_30min_button)
+        self.body3.addWidget(self.add_1H_button)
+        self.body3.addWidget(self.add_2H_button)
 
-        self.layout.addWidget(self.submit_button, self.layout.rowCount(), 0, 1, self.layout.columnCount())
+        self.bodyLayout.addWidget(self.time_slider)
+        self.bodyLayout.addWidget(self.submit_button)
 
     def __connectSignalToSlot(self):
-        pass
+        self.time_slider.valueChanged.connect(self.on_slider_changed)
+        self.now_button.clicked.connect(self.on_now_button_clicked)
+
+    @Slot()
+    def on_now_button_clicked(self):
+        _time = QDateTime.currentDateTime()
+        self.end_time_picker.setDateTime(_time)
+        self.time_slider.setValue(_time.time().hour() * 60 + _time.time().minute())
+
+    @Slot()
+    def on_slider_changed(self, value):
+        total_minutes = value
+        hours = total_minutes // 60
+        minutes = total_minutes % 60
+        time = QTime(hours, minutes)
+        self.end_time_picker.setDateTime(QDateTime(QDate.currentDate(), time))
 
 
 if __name__ == '__main__':
