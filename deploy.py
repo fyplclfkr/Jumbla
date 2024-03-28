@@ -13,6 +13,8 @@ if not DEBUG:
     deploy_command += '--windows-icon-from-ico=app/resource/images/logo.ico '
     deploy_command += '--output-dir=dist '
     deploy_command += '--report=dist/report.xml '
-    deploy_command += 'app/jumbla.py'
+    deploy_command += 'jumbla.py'
 
     os.system(deploy_command)
+else:
+    print('DEBUG模式下不进行打包')

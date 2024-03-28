@@ -4,14 +4,15 @@ from traceback import format_exception
 from types import TracebackType
 from typing import Type
 
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import MSFluentWindow, Dialog, NavigationItemPosition
 
+from app.common import resource
 from app.common.jbl import get_remote_version, update
-from app.common.setting import VERSION, APPNAME, DEBUG
+from app.common.setting import VERSION, APP_NAME, DEBUG
 from app.common.utils import JBLLogger
 from app.common.utils import exceptionFilter, ExceptionFilterMode
 from app.components.exceptionWidget import ExceptionWidget
@@ -26,10 +27,16 @@ class MainWindow(MSFluentWindow):
         super().__init__()
         self.initWindow()
 
+        # 启动时更新
+        self.timer1 = QTimer()
+        self.timer1.setSingleShot(True)
+        self.timer1.timeout.connect(self.check_update)
+        self.timer1.start(1000)
+        
         # 定时更新检测
         self.timer = QTimer()
         self.timer.timeout.connect(self.check_update)
-        self.timer.start(1000)
+        self.timer.start(600000)
 
         self.oldHook = sys.excepthook
         sys.excepthook = self.catchException
@@ -43,7 +50,6 @@ class MainWindow(MSFluentWindow):
         # 初始化导航栏
         self.initNavigation()
 
-
     def initNavigation(self):
         # 导航栏
         # self.addSubInterface(self.reference_interface, FIF.VIDEO, '参考视频')
@@ -51,15 +57,19 @@ class MainWindow(MSFluentWindow):
         self.addSubInterface(self.timelog_interface, FIF.HISTORY, '工时')
         self.addSubInterface(self.setting_interface, FIF.SETTING, '设置', position=NavigationItemPosition.BOTTOM)
         self.switchTo(self.timelog_interface)
+        # self.switchTo(self.setting_interface)
 
     def initWindow(self):
         self.resize(1024, 768)
-        self.setWindowTitle(f'{APPNAME} V{VERSION}')
+        self.setWindowTitle(APP_NAME)
         self.setWindowIcon(QIcon(':/images/logo.png'))
 
         # 窗口位置居中
         desktop = self.screen().availableGeometry()
         self.move((desktop.width() - self.width()) / 2, (desktop.height() - self.height()) / 2)
+        
+        if DEBUG:
+            self.move(300, 1100)
 
     # 全局异常处理
     def catchException(self, ty: Type[BaseException], value: BaseException, _traceback: TracebackType):
@@ -98,6 +108,7 @@ class MainWindow(MSFluentWindow):
             box.exec()
             return self.oldHook(ty, value, _traceback)
 
+    @Slot()
     def check_update(self):
         if DEBUG:
             return

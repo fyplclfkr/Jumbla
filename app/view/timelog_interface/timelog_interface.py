@@ -2,7 +2,7 @@
 from datetime import date, datetime
 from importlib import reload
 
-from PySide6.QtCore import Qt, QTime, QDateTime, QDate
+from PySide6.QtCore import Qt, QTime, QDateTime, QDate, QTimer
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QFrame, QHBoxLayout, QListWidgetItem
 from qfluentwidgets import InfoBar, InfoBarPosition
 
@@ -20,8 +20,13 @@ class TimeLogInterface(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.TASKLIST = []
+        self.TASK_LIST = []
         self.DAILY_TIMELOG = []
+        
+        # 凌晨启用start_time_picker
+        self._timer = QTimer()
+        self._timer.timeout.connect(self.set_start_timePicker)
+        self._timer.start(60000)
 
         self.__initWidget()
 
@@ -74,10 +79,14 @@ class TimeLogInterface(QWidget):
     def __connectSignalToSlot(self):
         self.init_data()
         self.header.refresh_button.clicked.connect(self.refresh_data)
-        self.project_taskList.projectListWidget.itemClicked.connect(self.set_task_list)
-        self.project_taskList.taskListWidget.itemClicked.connect(self.set_task_info)
-        self.project_taskList.taskSearch.textChanged.connect(self.on_task_search_text_changed)
-        self.subWidget.submit_button.clicked.connect(self.on_submit_button_clicked)
+        self.project_taskList.projectListWidget.itemClicked.connect(
+            self.set_task_list)
+        self.project_taskList.taskListWidget.itemClicked.connect(
+            self.set_task_info)
+        self.project_taskList.taskSearch.textChanged.connect(
+            self.on_task_search_text_changed)
+        self.subWidget.submit_button.clicked.connect(
+            self.on_submit_button_clicked)
         self.subWidget.end_time_picker.dateTimeChanged.connect(lambda: self.subWidget.workTimeLabel.setText(
             f'本次工时：{jbl.calculate_work_time(self.subWidget.start_time_picker.dateTime(), self.subWidget.end_time_picker.dateTime())}'))
 
@@ -98,18 +107,21 @@ class TimeLogInterface(QWidget):
         self.header.nameLabel.setText(jbl.ACCOUNT_LIST.get('account.name'))
         # 上班时间
         self.header.clockInTimeLabel.setText(jbl.CLOCK_IN_TIME)
-        self.get_timelog_thread = GetDailyTimelogThread(date.today().strftime("%Y-%m-%d"))
+        self.get_timelog_thread = GetDailyTimelogThread(
+            date.today().strftime("%Y-%m-%d"))
 
         def handle_timelog(result):
             self.DAILY_TIMELOG = result
             if self.DAILY_TIMELOG:
                 # 上次打卡时间
-                self.header.lastTimeLabel.setText(self.DAILY_TIMELOG[-1].get('end_time'))
+                self.header.lastTimeLabel.setText(
+                    self.DAILY_TIMELOG[-1].get('end_time'))
                 # 今日工时
                 _today_use_time = 0
                 for item in self.DAILY_TIMELOG:
                     _today_use_time += int(item['use_time'])
-                self.header.todayTimeLabel.setText('{:.1f}'.format(_today_use_time / 3600))
+                self.header.todayTimeLabel.setText(
+                    '{:.1f}'.format(_today_use_time / 3600))
             else:
                 self.header.todayTimeLabel.setText('0.0')
 
@@ -147,11 +159,12 @@ class TimeLogInterface(QWidget):
         # 清除搜索框
         self.project_taskList.taskSearch.setText('')
         # 获取任务列表
-        _db = self.project_taskList.projectListWidget.currentItem().data(Qt.UserRole)['project.database']
+        _db = self.project_taskList.projectListWidget.currentItem().data(Qt.UserRole)[
+            'project.database']
         self.get_task_thread = GetTasksThread(_db)
 
         def handle_task_list(task_list):
-            self.TASKLIST = task_list
+            self.TASK_LIST = task_list
             self.project_taskList.taskListWidget.clear()
             for task in task_list:
                 list_item = QListWidgetItem(task['task.url'])
@@ -176,9 +189,11 @@ class TimeLogInterface(QWidget):
         if _residue < 0:
             self.taskInfoWidget.residue_time_label.setStyleSheet('color: red;')
         else:
-            self.taskInfoWidget.residue_time_label.setStyleSheet('color: rgba(51, 51, 51, 0.5);')
+            self.taskInfoWidget.residue_time_label.setStyleSheet(
+                'color: rgba(51, 51, 51, 0.5);')
 
-        self.taskInfoWidget.project_name_label.setText(self.project_taskList.projectListWidget.currentItem().text())
+        self.taskInfoWidget.project_name_label.setText(
+            self.project_taskList.projectListWidget.currentItem().text())
         self.taskInfoWidget.task_name_label.setText(
             self.project_taskList.taskListWidget.currentItem().data(Qt.UserRole)['task.url'])
         self.taskInfoWidget.task_statu_label.setText(
@@ -195,13 +210,15 @@ class TimeLogInterface(QWidget):
                 # 获取最后一个打卡记录的结束时间字符串
                 end_time_str = self.DAILY_TIMELOG[-1]['end_time']
                 # 将字符串转换为QDateTime对象
-                end_time_dt = QDateTime.fromString(end_time_str, 'yyyy-MM-dd HH:mm:ss')
+                end_time_dt = QDateTime.fromString(
+                    end_time_str, 'yyyy-MM-dd HH:mm:ss')
                 self.subWidget.start_time_picker.setDateTime(end_time_dt)
                 self.subWidget.end_time_picker.setDateTime(end_time_dt)
             else:
                 # 上班打卡，未提交当日工时，开始时间设置成当天上班时间
                 if jbl.CLOCK_IN_TIME and not self.DAILY_TIMELOG:
-                    end_time_dt = QDateTime(QDate.currentDate(), QTime.fromString(jbl.CLOCK_IN_TIME, 'hh:mm'))
+                    end_time_dt = QDateTime(
+                        QDate.currentDate(), QTime.fromString(jbl.CLOCK_IN_TIME, 'hh:mm'))
                     self.subWidget.start_time_picker.setDateTime(end_time_dt)
                     self.subWidget.end_time_picker.setDateTime(end_time_dt)
                 InfoBar.info(
@@ -227,13 +244,23 @@ class TimeLogInterface(QWidget):
         # 设置Slider
         _start = self.subWidget.start_time_picker.dateTime().time()
         _end = self.subWidget.end_time_picker.dateTime().time()
-        self.subWidget.time_slider.setMinimum(_start.hour() * 60 + _start.minute())
+        self.subWidget.time_slider.setMinimum(
+            _start.hour() * 60 + _start.minute())
         self.subWidget.time_slider.setMaximum(1439)
         self.subWidget.time_slider.setValue(_end.hour() * 60 + _end.minute())
+        self.set_start_timePicker()
+
+    def set_start_timePicker(self):
+        # 凌晨到早上8点启用start_time_picker
+        if datetime.now().hour < 8:
+            self.subWidget.start_time_picker.setEnabled(True)
+        else:
+            self.subWidget.start_time_picker.setEnabled(False)
 
     def on_task_search_text_changed(self):
         filter_text = self.project_taskList.taskSearch.text()
-        filter_data = [item for item in self.TASKLIST if filter_text in item['task.url']]
+        filter_data = [
+            item for item in self.TASK_LIST if filter_text in item['task.url']]
         self.project_taskList.taskListWidget.clear()
         for task in filter_data:
             list_item = QListWidgetItem(task['task.url'])
@@ -242,7 +269,8 @@ class TimeLogInterface(QWidget):
 
     def on_submit_button_clicked(self):
         # 获取QDateTime对象
-        _clock_in_time = QDateTime(QDate.currentDate(), QTime.fromString(jbl.CLOCK_IN_TIME, 'hh:mm'))
+        _clock_in_time = QDateTime(
+            QDate.currentDate(), QTime.fromString(jbl.CLOCK_IN_TIME, 'hh:mm'))
         _now = QDateTime.currentDateTime()
         _start = self.subWidget.start_time_picker.dateTime()
         _end = self.subWidget.end_time_picker.dateTime()
@@ -268,18 +296,18 @@ class TimeLogInterface(QWidget):
                 parent=self
             )
             return
-        if _start < _clock_in_time:
-            InfoBar.error(
-                title='开始时间小于上班时间，请重新设置',
-                content='',
-                orient=Qt.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.TOP,
-                duration=3000,
-                parent=self
-            )
-            return
-        if _start.time() >= QTime(12, 0) and _end.time() <= QTime(13, 0):
+        # if _start < _clock_in_time:
+        #     InfoBar.error(
+        #         title='开始时间小于上班时间，请重新设置',
+        #         content='',
+        #         orient=Qt.Horizontal,
+        #         isClosable=True,
+        #         position=InfoBarPosition.TOP,
+        #         duration=3000,
+        #         parent=self
+        #     )
+        #     return
+        if _start.time().hour() == 12 and _end.time().hour() <= 13:
             InfoBar.error(
                 title='休息时间禁止提交工时',
                 content='',
@@ -292,16 +320,19 @@ class TimeLogInterface(QWidget):
             return
         # 获取提交任务信息
         try:
-            _db = self.project_taskList.projectListWidget.currentItem().data(Qt.UserRole)['project.database']
+            _db = self.project_taskList.projectListWidget.currentItem().data(Qt.UserRole)[
+                'project.database']
         except:
             _db = ''
         try:
-            _module = self.project_taskList.taskListWidget.currentItem().data(Qt.UserRole)['task.module']
+            _module = self.project_taskList.taskListWidget.currentItem().data(Qt.UserRole)[
+                'task.module']
         except:
             _module = ''
         _module_type = 'task'
         try:
-            _link_id = self.project_taskList.taskListWidget.currentItem().data(Qt.UserRole)['task.id']
+            _link_id = self.project_taskList.taskListWidget.currentItem().data(Qt.UserRole)[
+                'task.id']
         except:
             _link_id = ''
         # 计算工时
@@ -325,8 +356,10 @@ class TimeLogInterface(QWidget):
             )
             return
         else:
-            _project_name = self.project_taskList.projectListWidget.currentItem().data(Qt.UserRole)['project.full_name']
-            _task_name = self.project_taskList.taskListWidget.currentItem().data(Qt.UserRole)['task.url']
+            _project_name = self.project_taskList.projectListWidget.currentItem().data(Qt.UserRole)[
+                'project.full_name']
+            _task_name = self.project_taskList.taskListWidget.currentItem().data(Qt.UserRole)[
+                'task.url']
             w = SubmitDialog(_project_name, _task_name, _start_time, _end_time, formatted_time_diff,
                              self.window())
             # 确认提交工时
@@ -345,7 +378,8 @@ class TimeLogInterface(QWidget):
                         parent=self
                     )
                     # 提交完成，刷新界面
-                    task = jbl.reload_task_info(_db, _module, _link_id.split())[0]
+                    task = jbl.reload_task_info(
+                        _db, _module, _link_id.split())[0]
                     if task['task.expected_time']:
                         _expected_time = float(task['task.expected_time'])
                     else:
@@ -356,18 +390,22 @@ class TimeLogInterface(QWidget):
                         _usetime = 0
                     _residue_time = _expected_time - _usetime
                     if _residue_time < 0:
-                        self.taskInfoWidget.residue_time_label.setStyleSheet('color: red;')
+                        self.taskInfoWidget.residue_time_label.setStyleSheet(
+                            'color: red;')
                     else:
-                        self.taskInfoWidget.residue_time_label.setStyleSheet('color: rgba(51, 51, 51, 0.5);')
+                        self.taskInfoWidget.residue_time_label.setStyleSheet(
+                            'color: rgba(51, 51, 51, 0.5);')
                     self.taskInfoWidget.project_name_label.setText(
                         self.project_taskList.projectListWidget.currentItem().text())
                     self.taskInfoWidget.task_name_label.setText(
                         self.project_taskList.taskListWidget.currentItem().data(Qt.UserRole)['task.url'])
                     self.taskInfoWidget.task_statu_label.setText(
                         self.project_taskList.taskListWidget.currentItem().data(Qt.UserRole)['task.status'])
-                    self.taskInfoWidget.expected_time_label.setText(str(_expected_time))
+                    self.taskInfoWidget.expected_time_label.setText(
+                        str(_expected_time))
                     self.taskInfoWidget.use_time_label.setText(str(_usetime))
-                    self.taskInfoWidget.residue_time_label.setText(str(_residue_time))
+                    self.taskInfoWidget.residue_time_label.setText(
+                        str(_residue_time))
                     self.project_taskList.taskListWidget.currentItem().setData(Qt.UserRole, task)
                     self.set_header()
                     self.subWidget.workTimeLabel.setText('本次工时：00:00')

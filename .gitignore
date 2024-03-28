@@ -13,3 +13,4 @@
 *.py[cod]
 /tools/
 /dist/
+/AppData/

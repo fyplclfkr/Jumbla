@@ -89,11 +89,18 @@ class SubWidget(QWidget):
         self.add_1H_button.clicked.connect(self.on_add_1H_button_clicked)
         self.add_2H_button.clicked.connect(self.on_add_2H_button_clicked)
         # self.end_time_picker.dateTimeChanged.connect(self.on_end_time_changed)
+        self.start_time_picker.dateTimeChanged.connect(
+            lambda: self.time_slider.setMinimum(
+                self.start_time_picker.dateTime().time().hour() * 60 +
+                self.start_time_picker.dateTime().time().minute()
+            )
+        )
 
     def on_now_button_clicked(self):
         _time = QDateTime.currentDateTime()
         self.end_time_picker.setDateTime(_time)
-        self.time_slider.setValue(_time.time().hour() * 60 + _time.time().minute())
+        self.time_slider.setValue(
+            _time.time().hour() * 60 + _time.time().minute())
 
     def on_add_30min_button_clicked(self):
         _time = self.end_time_picker.dateTime()

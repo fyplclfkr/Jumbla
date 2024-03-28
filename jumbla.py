@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import sys
 
-from PySide6.QtCore import QObject, QEvent
+from PySide6.QtCore import QObject, QEvent, QLocale
 from PySide6.QtWidgets import QApplication
 
 from app.common.logger import Logger
 from app.view.main_window import MainWindow
+
+from qfluentwidgets import FluentTranslator
 
 
 class JumblaApplication(QApplication):
@@ -26,7 +28,9 @@ def initGlobalData():
 
 
 if __name__ == '__main__':
+    translator = FluentTranslator()
     app = JumblaApplication(sys.argv)
+    app.installTranslator(translator)
     app.setQuitOnLastWindowClosed(False)
     w = MainWindow()
     w.show()
