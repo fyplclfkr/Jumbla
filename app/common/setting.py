@@ -4,9 +4,9 @@ from pathlib import Path
 from PySide6.QtCore import QStandardPaths
 
 APPNAME = 'Jumbla'
-VERSION = '0.0.1'
+VERSION = '0.1.1'
 DEBUG = True
-DATABASE_URL = 'mysql://root:123456@localhost:3306'
+# DATABASE_URL = 'mysql://root:123456@localhost:3306'
 
 if DEBUG:
     CONFIG_FOLDER = Path('AppData').absolute()

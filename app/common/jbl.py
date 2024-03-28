@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 import json
+import subprocess
 import sys
 from datetime import date, datetime
 
 from PySide6.QtCore import QTime
+from PySide6.QtWidgets import QApplication
+
+from app.common.setting import VERSION
 
 sys.path.append(r'C:\CgTeamWork_v7\bin\base')
 import cgtw2
@@ -154,6 +158,36 @@ def reload_task_info(db, module, id):
                            'task.id']
         task = cgtw2.tw().task.get(db, module, id, field_sign_list, limit="5000", order_sign_list=[])
         return task
+
+
+def get_remote_version():
+    try:
+        with open(r'\\nas01\shares\dev\jumbla\version.json', 'r', encoding='utf-8') as f:
+            remote_version = json.load(f)['VERSION']
+            return remote_version
+    except Exception as e:
+        return e
+
+
+def get_release_notes():
+    try:
+        with open(r'\\nas01\shares\dev\jumbla\version.json', 'r', encoding='utf-8') as f:
+            release_notes = json.load(f)['ReleaseNotes']
+            return release_notes
+    except Exception as e:
+        return e
+
+
+def update():
+    try:
+        remote_version = get_remote_version()
+        print(f'Remote version: {remote_version}')
+        if VERSION != remote_version:
+            exe_file = f'//nas01/shares/dev/jumbla/jumbla{remote_version}.exe'
+            subprocess.Popen(exe_file)
+            QApplication.quit()
+    except Exception as e:
+        print(e)
 
 
 try:

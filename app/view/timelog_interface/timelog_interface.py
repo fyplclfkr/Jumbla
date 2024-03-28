@@ -102,7 +102,6 @@ class TimeLogInterface(QWidget):
 
         def handle_timelog(result):
             self.DAILY_TIMELOG = result
-            print(self.DAILY_TIMELOG)
             if self.DAILY_TIMELOG:
                 # 上次打卡时间
                 self.header.lastTimeLabel.setText(self.DAILY_TIMELOG[-1].get('end_time'))
@@ -335,43 +334,43 @@ class TimeLogInterface(QWidget):
                 _remarks = w.textLineEdit.toPlainText()
                 if _remarks:
                     _dict['text'] = _remarks
-                print(jbl.sub_time_log(_dict))
-                InfoBar.success(
-                    title='工时提交成功',
-                    content='',
-                    orient=Qt.Horizontal,
-                    isClosable=True,
-                    position=InfoBarPosition.TOP,
-                    duration=2000,
-                    parent=self
-                )
-                # 提交完成，刷新界面
-                task = jbl.reload_task_info(_db, _module, _link_id.split())[0]
-                if task['task.expected_time']:
-                    _expected_time = float(task['task.expected_time'])
-                else:
-                    _expected_time = 0
-                if task['task.total_use_time']:
-                    _usetime = float(task['task.total_use_time'])
-                else:
-                    _usetime = 0
-                _residue_time = _expected_time - _usetime
-                if _residue_time < 0:
-                    self.taskInfoWidget.residue_time_label.setStyleSheet('color: red;')
-                else:
-                    self.taskInfoWidget.residue_time_label.setStyleSheet('color: rgba(51, 51, 51, 0.5);')
-                self.taskInfoWidget.project_name_label.setText(
-                    self.project_taskList.projectListWidget.currentItem().text())
-                self.taskInfoWidget.task_name_label.setText(
-                    self.project_taskList.taskListWidget.currentItem().data(Qt.UserRole)['task.url'])
-                self.taskInfoWidget.task_statu_label.setText(
-                    self.project_taskList.taskListWidget.currentItem().data(Qt.UserRole)['task.status'])
-                self.taskInfoWidget.expected_time_label.setText(str(_expected_time))
-                self.taskInfoWidget.use_time_label.setText(str(_usetime))
-                self.taskInfoWidget.residue_time_label.setText(str(_residue_time))
-                self.project_taskList.taskListWidget.currentItem().setData(Qt.UserRole, task)
-                self.set_header()
-                self.subWidget.workTimeLabel.setText('本次工时：00:00')
+                if jbl.sub_time_log(_dict):  # 提交工时
+                    InfoBar.success(
+                        title='工时提交成功',
+                        content='',
+                        orient=Qt.Horizontal,
+                        isClosable=True,
+                        position=InfoBarPosition.TOP,
+                        duration=2000,
+                        parent=self
+                    )
+                    # 提交完成，刷新界面
+                    task = jbl.reload_task_info(_db, _module, _link_id.split())[0]
+                    if task['task.expected_time']:
+                        _expected_time = float(task['task.expected_time'])
+                    else:
+                        _expected_time = 0
+                    if task['task.total_use_time']:
+                        _usetime = float(task['task.total_use_time'])
+                    else:
+                        _usetime = 0
+                    _residue_time = _expected_time - _usetime
+                    if _residue_time < 0:
+                        self.taskInfoWidget.residue_time_label.setStyleSheet('color: red;')
+                    else:
+                        self.taskInfoWidget.residue_time_label.setStyleSheet('color: rgba(51, 51, 51, 0.5);')
+                    self.taskInfoWidget.project_name_label.setText(
+                        self.project_taskList.projectListWidget.currentItem().text())
+                    self.taskInfoWidget.task_name_label.setText(
+                        self.project_taskList.taskListWidget.currentItem().data(Qt.UserRole)['task.url'])
+                    self.taskInfoWidget.task_statu_label.setText(
+                        self.project_taskList.taskListWidget.currentItem().data(Qt.UserRole)['task.status'])
+                    self.taskInfoWidget.expected_time_label.setText(str(_expected_time))
+                    self.taskInfoWidget.use_time_label.setText(str(_usetime))
+                    self.taskInfoWidget.residue_time_label.setText(str(_residue_time))
+                    self.project_taskList.taskListWidget.currentItem().setData(Qt.UserRole, task)
+                    self.set_header()
+                    self.subWidget.workTimeLabel.setText('本次工时：00:00')
 
     def clear_task_info(self):
         # 清除任务信息

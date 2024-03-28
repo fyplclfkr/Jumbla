@@ -4,15 +4,18 @@ from traceback import format_exception
 from types import TracebackType
 from typing import Type
 
+from PySide6.QtCore import QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import MSFluentWindow, Dialog, NavigationItemPosition
 
-from app.common.setting import VERSION, APPNAME
+from app.common.jbl import get_remote_version, update
+from app.common.setting import VERSION, APPNAME, DEBUG
 from app.common.utils import JBLLogger
 from app.common.utils import exceptionFilter, ExceptionFilterMode
 from app.components.exceptionWidget import ExceptionWidget
+from app.components.update_dialog import UpdateDialog
 from app.view.dcclaunch_interface import DCCLaunchInterface
 from app.view.setting_interface import SettingInterface
 from app.view.timelog_interface import TimeLogInterface
@@ -22,6 +25,11 @@ class MainWindow(MSFluentWindow):
     def __init__(self):
         super().__init__()
         self.initWindow()
+
+        # 定时更新检测
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.check_update)
+        self.timer.start(1000)
 
         self.oldHook = sys.excepthook
         sys.excepthook = self.catchException
@@ -34,6 +42,7 @@ class MainWindow(MSFluentWindow):
 
         # 初始化导航栏
         self.initNavigation()
+
 
     def initNavigation(self):
         # 导航栏
@@ -88,3 +97,15 @@ class MainWindow(MSFluentWindow):
             box.cancelSignal.connect(exceptionWidget.deleteLater)
             box.exec()
             return self.oldHook(ty, value, _traceback)
+
+    def check_update(self):
+        if DEBUG:
+            return
+        if VERSION != get_remote_version():
+            w = UpdateDialog(self.window())
+            if w.exec_():
+                update()
+            else:
+                return
+        else:
+            return

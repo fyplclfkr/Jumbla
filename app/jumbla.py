@@ -5,7 +5,7 @@ from PySide6.QtCore import QObject, QEvent
 from PySide6.QtWidgets import QApplication
 
 from app.common.logger import Logger
-from view.main_window import MainWindow
+from app.view.main_window import MainWindow
 
 
 class JumblaApplication(QApplication):
