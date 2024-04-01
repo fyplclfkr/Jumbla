@@ -11,6 +11,8 @@
 # 忽略python缓存文件
 */__pycache__
 *.py[cod]
-/tools/
-/dist/
-/AppData/
+/tools
+/dist
+/AppData
+/.vscode
+/build

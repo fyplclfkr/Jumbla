@@ -30,14 +30,14 @@ class SettingInterface(ScrollArea):
         )
 
         self.personalGroup = SettingCardGroup('个性化', self.scrollWidget)
-        self.themeCard = OptionsSettingCard(
-            cfg.themeMode,
-            FIF.BRUSH,
-            '应用主题',
-            '调整应用主题',
-            texts=['浅色', '深色', '跟随系统'],
-            parent=self.personalGroup
-        )
+        # self.themeCard = OptionsSettingCard(
+        #     cfg.themeMode,
+        #     FIF.BRUSH,
+        #     '应用主题',
+        #     '调整应用主题',
+        #     texts=['浅色', '深色', '跟随系统'],
+        #     parent=self.personalGroup
+        # )
         self.themeColorCard = CustomColorSettingCard(
             configItem=cfg.themeColor,
             icon=FIF.PALETTE,
@@ -68,7 +68,7 @@ class SettingInterface(ScrollArea):
 
     def __initLayout(self):
         self.aboutGroup.addSettingCard(self.aboutCard)
-        self.personalGroup.addSettingCard(self.themeCard)
+        # self.personalGroup.addSettingCard(self.themeCard)
         self.personalGroup.addSettingCard(self.themeColorCard)
 
         self.expandLayout.setSpacing(28)

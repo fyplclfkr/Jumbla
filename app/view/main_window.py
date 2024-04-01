@@ -6,9 +6,9 @@ from typing import Type
 
 from PySide6.QtCore import QTimer, Slot
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon
 from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import MSFluentWindow, Dialog, NavigationItemPosition
+from qfluentwidgets import MSFluentWindow, Dialog, NavigationItemPosition, SystemTrayMenu
 
 from app.common import resource
 from app.common.jbl import get_remote_version, update
@@ -17,9 +17,15 @@ from app.common.utils import JBLLogger
 from app.common.utils import exceptionFilter, ExceptionFilterMode
 from app.components.exceptionWidget import ExceptionWidget
 from app.components.update_dialog import UpdateDialog
-from app.view.dcclaunch_interface import DCCLaunchInterface
+from app.view.dcc_launch_interface import DCCLaunchInterface
 from app.view.setting_interface import SettingInterface
 from app.view.timelog_interface import TimeLogInterface
+
+class JumblaTrayIcon(QSystemTrayIcon):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.setIcon(parent.windowIcon())
+        self.setToolTip('今天打卡了吗🥰')
 
 
 class MainWindow(MSFluentWindow):
@@ -43,7 +49,7 @@ class MainWindow(MSFluentWindow):
 
         # 创建子界面
         # self.reference_interface = ReferenceInterface(self)
-        self.dcclaunch_interface = DCCLaunchInterface(self)
+        self.dcc_launch_interface = DCCLaunchInterface(self)
         self.timelog_interface = TimeLogInterface(self)
         self.setting_interface = SettingInterface(self)
 
@@ -53,7 +59,7 @@ class MainWindow(MSFluentWindow):
     def initNavigation(self):
         # 导航栏
         # self.addSubInterface(self.reference_interface, FIF.VIDEO, '参考视频')
-        self.addSubInterface(self.dcclaunch_interface, FIF.APPLICATION, 'DCCLaunch')
+        self.addSubInterface(self.dcc_launch_interface, FIF.APPLICATION, 'DCCLaunch')
         self.addSubInterface(self.timelog_interface, FIF.HISTORY, '工时')
         self.addSubInterface(self.setting_interface, FIF.SETTING, '设置', position=NavigationItemPosition.BOTTOM)
         self.switchTo(self.timelog_interface)
@@ -68,8 +74,8 @@ class MainWindow(MSFluentWindow):
         desktop = self.screen().availableGeometry()
         self.move((desktop.width() - self.width()) / 2, (desktop.height() - self.height()) / 2)
         
-        if DEBUG:
-            self.move(300, 1100)
+        # if DEBUG:
+        #     self.move(300, 1100)
 
     # 全局异常处理
     def catchException(self, ty: Type[BaseException], value: BaseException, _traceback: TracebackType):
@@ -114,7 +120,7 @@ class MainWindow(MSFluentWindow):
             return
         if VERSION != get_remote_version():
             w = UpdateDialog(self.window())
-            if w.exec_():
+            if w.exec():
                 update()
             else:
                 return

@@ -274,17 +274,17 @@ class TimeLogInterface(QWidget):
         _now = QDateTime.currentDateTime()
         _start = self.subWidget.start_time_picker.dateTime()
         _end = self.subWidget.end_time_picker.dateTime()
-        # if _end > _now:
-        #     InfoBar.error(
-        #         title='结束时间未到，请重新设置',
-        #         content='',
-        #         orient=Qt.Horizontal,
-        #         isClosable=True,
-        #         position=InfoBarPosition.TOP,
-        #         duration=3000,
-        #         parent=self
-        #     )
-        #     return
+        if _end > _now:
+            InfoBar.error(
+                title='结束时间未到，请重新设置',
+                content='',
+                orient=Qt.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=3000,
+                parent=self
+            )
+            return
         if _start >= _end:
             InfoBar.error(
                 title='结束时间小于等于开始时间，请重新设置',

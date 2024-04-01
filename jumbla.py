@@ -21,6 +21,7 @@ class JumblaApplication(QApplication):
         except Exception as e:
             Logger.critical(e)
             return False
+        
 
 
 def initGlobalData():
@@ -31,7 +32,7 @@ if __name__ == '__main__':
     translator = FluentTranslator()
     app = JumblaApplication(sys.argv)
     app.installTranslator(translator)
-    app.setQuitOnLastWindowClosed(False)
+    # app.setQuitOnLastWindowClosed(False)
     w = MainWindow()
     w.show()
     app.exec()

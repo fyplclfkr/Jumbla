@@ -13,9 +13,9 @@ class Config(QConfig):
 
 APP_NAME = 'JumblaTools'
 YEAR = 2024
-VERSION = '0.1.1'
+VERSION = '0.1.2'
 AUTHOR = "Jumbla"
-DEBUG = True
+DEBUG = False
 # DATABASE_URL = 'mysql://root:123456@localhost:3306'
 
 if DEBUG:

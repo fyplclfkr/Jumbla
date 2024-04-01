@@ -8,6 +8,7 @@ class StyleSheet(StyleSheetBase, Enum):
     """ Style sheet  """
 
     SETTING_INTERFACE = "setting_interface"
+    DCC_LAUNCH_INTERFACE = "dcc_launch_interface"
 
     def path(self, theme=Theme.AUTO):
         theme = qconfig.theme if theme == Theme.AUTO else theme
