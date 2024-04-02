@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+import errno
+import os
 import sys
 
-from PySide6.QtCore import QObject, QEvent, QLocale
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QObject, QEvent, QLocale, QLockFile
+from PySide6.QtWidgets import QApplication, QMessageBox
 
 from app.common.logger import Logger
+from app.common.setting import APP_NAME
 from app.view.main_window import MainWindow
 
-from qfluentwidgets import FluentTranslator
+from qfluentwidgets import FluentTranslator, Dialog, MessageBox
 
 
 class JumblaApplication(QApplication):
@@ -21,18 +24,31 @@ class JumblaApplication(QApplication):
         except Exception as e:
             Logger.critical(e)
             return False
-        
 
 
 def initGlobalData():
     pass
 
 
-if __name__ == '__main__':
+def runApp():
     translator = FluentTranslator()
     app = JumblaApplication(sys.argv)
     app.installTranslator(translator)
     # app.setQuitOnLastWindowClosed(False)
-    w = MainWindow()
-    w.show()
-    app.exec()
+    lockFile = QLockFile('jumbla.lock')  # 创建lockfile防止多开
+    if lockFile.tryLock(2000):
+        w = MainWindow()
+        w.show()
+        app.exec()
+    else:
+        content = """在右下角托盘重新激活程序"""
+        w = Dialog(
+            title='程序已打开',
+            content=content,
+        )
+        # w.cancelButton.setText('关闭')
+        w.exec()
+
+
+if __name__ == '__main__':
+    runApp()

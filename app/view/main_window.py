@@ -4,10 +4,10 @@ from traceback import format_exception
 from types import TracebackType
 from typing import Type
 
-from PySide6.QtCore import QTimer, Slot
+from PySide6.QtCore import QTimer, Slot, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon
-from qfluentwidgets import FluentIcon as FIF
+from qfluentwidgets import FluentIcon as FIF, Action, MessageBox
 from qfluentwidgets import MSFluentWindow, Dialog, NavigationItemPosition, SystemTrayMenu
 
 from app.common import resource
@@ -21,11 +21,33 @@ from app.view.dcc_launch_interface import DCCLaunchInterface
 from app.view.setting_interface import SettingInterface
 from app.view.timelog_interface import TimeLogInterface
 
+
 class JumblaTrayIcon(QSystemTrayIcon):
+    """托盘"""
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setIcon(parent.windowIcon())
-        self.setToolTip('今天打卡了吗🥰')
+        self.setToolTip(APP_NAME)
+
+        self.menu = SystemTrayMenu(parent=parent)
+        self.menu.addActions([
+            Action('显示', triggered=self.showApp),
+            Action('退出', triggered=self.exitApp),
+        ])
+        self.setContextMenu(self.menu)
+
+        self.activated.connect(self.onTrayIconActivated)
+
+    def exitApp(self):
+        QApplication.exit()
+
+    def showApp(self):
+        self.parent().showNormal()
+
+    def onTrayIconActivated(self, reason):
+        if reason == QSystemTrayIcon.ActivationReason.Trigger:
+            self.showApp()
 
 
 class MainWindow(MSFluentWindow):
@@ -37,8 +59,8 @@ class MainWindow(MSFluentWindow):
         self.timer1 = QTimer()
         self.timer1.setSingleShot(True)
         self.timer1.timeout.connect(self.check_update)
-        self.timer1.start(1000)
-        
+        self.timer1.start(5000)
+
         # 定时更新检测
         self.timer = QTimer()
         self.timer.timeout.connect(self.check_update)
@@ -52,6 +74,10 @@ class MainWindow(MSFluentWindow):
         self.dcc_launch_interface = DCCLaunchInterface(self)
         self.timelog_interface = TimeLogInterface(self)
         self.setting_interface = SettingInterface(self)
+
+        # 托盘
+        self.systemTrayIcon = JumblaTrayIcon(self)
+        self.systemTrayIcon.show()
 
         # 初始化导航栏
         self.initNavigation()
@@ -73,7 +99,7 @@ class MainWindow(MSFluentWindow):
         # 窗口位置居中
         desktop = self.screen().availableGeometry()
         self.move((desktop.width() - self.width()) / 2, (desktop.height() - self.height()) / 2)
-        
+
         # if DEBUG:
         #     self.move(300, 1100)
 
@@ -113,6 +139,12 @@ class MainWindow(MSFluentWindow):
             box.cancelSignal.connect(exceptionWidget.deleteLater)
             box.exec()
             return self.oldHook(ty, value, _traceback)
+
+    def closeEvent(self, event):
+        event.ignore()
+        self.hide()
+        self.systemTrayIcon.showMessage('后台运行', '程序正在后台运行，点击托盘图标重新激活程序。',
+                                        QSystemTrayIcon.MessageIcon.Information, 2000)
 
     @Slot()
     def check_update(self):

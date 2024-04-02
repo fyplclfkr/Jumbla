@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QGridLayout, QFrame
-from qfluentwidgets import MessageBoxBase, StrongBodyLabel, PlainTextEdit, BodyLabel, SubtitleLabel
+from PySide6.QtWidgets import QGridLayout, QFrame, QCheckBox
+from qfluentwidgets import MessageBoxBase, StrongBodyLabel, PlainTextEdit, BodyLabel, SubtitleLabel, CheckBox
 
 
 class SubmitDialog(MessageBoxBase):
@@ -10,6 +10,8 @@ class SubmitDialog(MessageBoxBase):
 
     def __init__(self, projectName: str, taskName: str, startTime: str, endTime: str, useTime: str, parent=None):
         super().__init__(parent)
+        self.useTime = useTime
+
         self.titleLabel = SubtitleLabel('确认打卡内容')
         self.bodyFrame = QFrame()
 
@@ -34,6 +36,10 @@ class SubmitDialog(MessageBoxBase):
         self.textLineEdit = PlainTextEdit()
         self.textLineEdit.setPlaceholderText('非项目工时请填写备注')
 
+        self.ignoreCheckBox = CheckBox('忽略本次工时')
+        self.ignoreCheckBox.setToolTip('选中后本次提交不记录工时')
+        self.ignoreCheckBox.clicked.connect(self.onIgnoreCheckBox)
+
         # 将组件添加到布局中
         self.viewLayout.addWidget(self.titleLabel)
         self.titleLabel.setAlignment(Qt.AlignCenter)
@@ -52,3 +58,10 @@ class SubmitDialog(MessageBoxBase):
         self.bodyLayout.addWidget(self.useTimeLabel, 4, 1)
         self.bodyLayout.addWidget(self.textLabel, 5, 0)
         self.bodyLayout.addWidget(self.textLineEdit, 6, 0, 1, -1)
+        self.bodyLayout.addWidget(self.ignoreCheckBox, 7, 0)
+
+    def onIgnoreCheckBox(self):
+        if self.ignoreCheckBox.isChecked():
+            self.useTimeLabel.setText('00:00')
+        else:
+            self.useTimeLabel.setText(self.useTime)
