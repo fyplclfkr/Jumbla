@@ -103,10 +103,14 @@ class TimeLogInterface(QWidget):
         self.set_project_list()
 
     def set_header(self):
+        self.header.refresh_button.setEnabled(False)
         # cgtw用户名
         self.header.nameLabel.setText(jbl.ACCOUNT_LIST.get('account.name'))
         # 上班时间
-        self.header.clockInTimeLabel.setText(jbl.CLOCK_IN_TIME)
+        if jbl.CLOCK_IN_TIME:
+            self.header.clockInTimeLabel.setText(jbl.CLOCK_IN_TIME)
+        else:
+            self.header.clockInTimeLabel.setText('未打卡')
         self.get_timelog_thread = GetDailyTimelogThread(
             date.today().strftime("%Y-%m-%d"))
 
@@ -124,9 +128,11 @@ class TimeLogInterface(QWidget):
                     '{:.1f}'.format(_today_use_time / 3600))
             else:
                 self.header.todayTimeLabel.setText('0.0')
+                self.header.lastTimeLabel.setText('无')
 
         self.get_timelog_thread.getTimelogFinished.connect(handle_timelog)
         self.get_timelog_thread.getTimelogFinished.connect(self.set_sub_widget)
+        self.get_timelog_thread.getTimelogFinished.connect(lambda: self.header.refresh_button.setEnabled(True))
         self.get_timelog_thread.start()
 
     def set_project_list(self):
@@ -208,6 +214,7 @@ class TimeLogInterface(QWidget):
     def set_sub_widget(self):
         # 设置开始时间
         if jbl.CLOCK_IN_TIME:
+            self.subWidget.submit_button.setEnabled(True)
             if self.DAILY_TIMELOG:
                 # 当日已提交过工时，开始时间设置成上一个工时结束时间
                 # 获取最后一个打卡记录的结束时间字符串
@@ -235,6 +242,18 @@ class TimeLogInterface(QWidget):
                 )
                 self.header.lastTimeLabel.setText('无')
         else:
+            if self.DAILY_TIMELOG:
+                # 当日已提交过工时，开始时间设置成上一个工时结束时间
+                # 获取最后一个打卡记录的结束时间字符串
+                end_time_str = self.DAILY_TIMELOG[-1]['end_time']
+                # 将字符串转换为QDateTime对象
+                end_time_dt = QDateTime.fromString(
+                    end_time_str, 'yyyy-MM-dd HH:mm:ss')
+                self.subWidget.start_time_picker.setDateTime(end_time_dt)
+                self.subWidget.end_time_picker.setDateTime(end_time_dt)
+                self.subWidget.submit_button.setEnabled(True)
+            else:
+                self.subWidget.submit_button.setEnabled(False)
             InfoBar.warning(
                 title='钉钉未打卡',
                 content='',
