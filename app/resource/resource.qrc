@@ -7,6 +7,11 @@
         <file>images/success.png</file>
         <file>images/working.png</file>
 
+        <file>images/icons/Deadline_black.svg</file>
+        <file>images/icons/Deadline_white.svg</file>
+        <file>images/icons/ToolKit_white.svg</file>
+        <file>images/icons/ToolKit_black.svg</file>
+
         <file>qss/dark/setting_interface.qss</file>
 
         <file>qss/light/setting_interface.qss</file>

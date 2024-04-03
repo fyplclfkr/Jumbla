@@ -4,18 +4,20 @@ from traceback import format_exception
 from types import TracebackType
 from typing import Type
 
-from PySide6.QtCore import QTimer, Slot, Qt
+from PySide6.QtCore import QTimer, Slot, Qt, QSize, QEvent
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon
 from qfluentwidgets import FluentIcon as FIF, Action, MessageBox
 from qfluentwidgets import MSFluentWindow, Dialog, NavigationItemPosition, SystemTrayMenu
 
 from app.common import resource
+from app.common.icon import JBLIcon
 from app.common.jbl import get_remote_version, update
 from app.common.setting import VERSION, APP_NAME, DEBUG
 from app.common.utils import JBLLogger
 from app.common.utils import exceptionFilter, ExceptionFilterMode
 from app.components.exceptionWidget import ExceptionWidget
+from app.components import FloatWindow, FloatMenu, TrayMenu
 from app.components.update_dialog import UpdateDialog
 from app.view.dcc_launch_interface import DCCLaunchInterface
 from app.view.setting_interface import SettingInterface
@@ -30,24 +32,19 @@ class JumblaTrayIcon(QSystemTrayIcon):
         self.setIcon(parent.windowIcon())
         self.setToolTip(APP_NAME)
 
-        self.menu = SystemTrayMenu(parent=parent)
-        self.menu.addActions([
-            Action('显示', triggered=self.showApp),
-            Action('退出', triggered=self.exitApp),
-        ])
+        self.menu = TrayMenu()
+        # self.menu = SystemTrayMenu(parent=parent)
+        # self.menu.addActions([
+        #     Action('显示', triggered=lambda: self.parent().showNormal()),
+        #     Action('退出', triggered=lambda: QApplication.instance().exit()),
+        # ])
         self.setContextMenu(self.menu)
 
         self.activated.connect(self.onTrayIconActivated)
 
-    def exitApp(self):
-        QApplication.exit()
-
-    def showApp(self):
-        self.parent().showNormal()
-
     def onTrayIconActivated(self, reason):
         if reason == QSystemTrayIcon.ActivationReason.Trigger:
-            self.showApp()
+            self.parent().showNormal()
 
 
 class MainWindow(MSFluentWindow):
@@ -75,9 +72,13 @@ class MainWindow(MSFluentWindow):
         self.timelog_interface = TimeLogInterface(self)
         self.setting_interface = SettingInterface(self)
 
+        # 悬浮窗
+        self.floatWindow = FloatWindow(self)
+        self.floatWindow.show()
+
         # 托盘
-        self.systemTrayIcon = JumblaTrayIcon(self)
-        self.systemTrayIcon.show()
+        # self.systemTrayIcon = JumblaTrayIcon()
+        # self.systemTrayIcon.show()
 
         # 初始化导航栏
         self.initNavigation()
@@ -95,6 +96,10 @@ class MainWindow(MSFluentWindow):
         self.resize(1024, 768)
         self.setWindowTitle(APP_NAME)
         self.setWindowIcon(QIcon(':/images/logo.png'))
+
+        # 移除最小化和最大化
+        self.titleBar.minBtn.hide()
+        self.titleBar.maxBtn.hide()
 
         # 窗口位置居中
         desktop = self.screen().availableGeometry()
@@ -143,8 +148,6 @@ class MainWindow(MSFluentWindow):
     def closeEvent(self, event):
         event.ignore()
         self.hide()
-        self.systemTrayIcon.showMessage('后台运行', '程序正在后台运行，点击托盘图标重新激活程序。',
-                                        QSystemTrayIcon.MessageIcon.Information, 2000)
 
     @Slot()
     def check_update(self):

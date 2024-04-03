@@ -16,6 +16,7 @@ YEAR = 2024
 VERSION = '0.1.4'
 AUTHOR = "Jumbla"
 DEBUG = False
+TOOL_ACTION = r'\\nas01\shares\dev\jumbla\tool_action.yaml'
 # DATABASE_URL = 'mysql://root:123456@localhost:3306'
 
 if DEBUG:
