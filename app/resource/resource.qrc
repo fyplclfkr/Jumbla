@@ -6,15 +6,31 @@
         <file>images/star.png</file>
         <file>images/success.png</file>
         <file>images/working.png</file>
-
+        <file>images/logo.svg</file>
         <file>images/icons/Deadline_black.svg</file>
         <file>images/icons/Deadline_white.svg</file>
         <file>images/icons/ToolKit_white.svg</file>
         <file>images/icons/ToolKit_black.svg</file>
-
+        <file>images/icons/Power_black.svg</file>
+        <file>images/icons/Power_white.svg</file>
         <file>qss/dark/setting_interface.qss</file>
-
         <file>qss/light/setting_interface.qss</file>
         <file>qss/light/dcc_launch_interface.qss</file>
+        <file>images/icons/3ds-max.png</file>
+        <file>images/icons/Adobe After Effects.png</file>
+        <file>images/icons/Adobe Photoshop.png</file>
+        <file>images/icons/Adobe Premiere.png</file>
+        <file>images/icons/Blender.png</file>
+        <file>images/icons/Cinema-4d.png</file>
+        <file>images/icons/Fusion.png</file>
+        <file>images/icons/Houdini.png</file>
+        <file>images/icons/Maya.png</file>
+        <file>images/icons/Mocha.png</file>
+        <file>images/icons/Natron.png</file>
+        <file>images/icons/Nuke.png</file>
+        <file>images/icons/Silhouette.png</file>
+        <file>images/icons/Unity.png</file>
+        <file>images/icons/Unreal-engine.png</file>
+        <file>images/icons/Zbrush.png</file>
     </qresource>
 </RCC>

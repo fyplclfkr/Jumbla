@@ -4,16 +4,17 @@ from traceback import format_exception
 from types import TracebackType
 from typing import Type
 
-from PySide6.QtCore import QTimer, Slot, Qt, QSize, QEvent
+from PySide6.QtCore import QTimer, Slot, Qt, QSize, QEvent, QTime, QDateTime
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon
-from qfluentwidgets import FluentIcon as FIF, Action, MessageBox
+from qfluentwidgets import FluentIcon as FIF, Action, MessageBox, InfoBar
 from qfluentwidgets import MSFluentWindow, Dialog, NavigationItemPosition, SystemTrayMenu
+from windows_toasts import Toast, WindowsToaster, InteractableWindowsToaster, ToastButton, ToastActivatedEventArgs
 
 from app.common import resource
 from app.common.icon import JBLIcon
 from app.common.jbl import get_remote_version, update
-from app.common.setting import VERSION, APP_NAME, DEBUG
+from app.common.setting import VERSION, APP_NAME, DEBUG, cfg
 from app.common.utils import JBLLogger
 from app.common.utils import exceptionFilter, ExceptionFilterMode
 from app.components.exceptionWidget import ExceptionWidget
@@ -33,11 +34,6 @@ class JumblaTrayIcon(QSystemTrayIcon):
         self.setToolTip(APP_NAME)
 
         self.menu = TrayMenu()
-        # self.menu = SystemTrayMenu(parent=parent)
-        # self.menu.addActions([
-        #     Action('显示', triggered=lambda: self.parent().showNormal()),
-        #     Action('退出', triggered=lambda: QApplication.instance().exit()),
-        # ])
         self.setContextMenu(self.menu)
 
         self.activated.connect(self.onTrayIconActivated)
@@ -67,7 +63,6 @@ class MainWindow(MSFluentWindow):
         sys.excepthook = self.catchException
 
         # 创建子界面
-        # self.reference_interface = ReferenceInterface(self)
         self.dcc_launch_interface = DCCLaunchInterface(self)
         self.timelog_interface = TimeLogInterface(self)
         self.setting_interface = SettingInterface(self)
@@ -83,19 +78,22 @@ class MainWindow(MSFluentWindow):
         # 初始化导航栏
         self.initNavigation()
 
+        # 定时激活窗口
+        # self.timer2 = QTimer()
+        # self.timer2.timeout.connect(self.activateWindow)
+        # self.timer2.start(5000)
+
     def initNavigation(self):
         # 导航栏
-        # self.addSubInterface(self.reference_interface, FIF.VIDEO, '参考视频')
         self.addSubInterface(self.dcc_launch_interface, FIF.APPLICATION, 'DCCLaunch')
         self.addSubInterface(self.timelog_interface, FIF.HISTORY, '工时')
         self.addSubInterface(self.setting_interface, FIF.SETTING, '设置', position=NavigationItemPosition.BOTTOM)
         self.switchTo(self.timelog_interface)
-        # self.switchTo(self.setting_interface)
 
     def initWindow(self):
         self.resize(1024, 768)
         self.setWindowTitle(APP_NAME)
-        self.setWindowIcon(QIcon(':/images/logo.png'))
+        self.setWindowIcon(QIcon(':/images/logo.svg'))
 
         # 移除最小化和最大化
         self.titleBar.minBtn.hide()
@@ -161,3 +159,34 @@ class MainWindow(MSFluentWindow):
                 return
         else:
             return
+
+    def toast_callback(self, activatedEventArgs: ToastActivatedEventArgs):
+        print(activatedEventArgs.arguments)
+        if activatedEventArgs.arguments == 'response=submit':
+            print('submit')
+            self.showNormal()  # 激活窗口
+            # self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)  # 窗口置顶
+
+    def activateWindow(self):
+        # 每天18:30激活窗口
+        now = QDateTime.currentDateTime()
+        print('1')
+        # if now.time().hour() == 18 and now.time().minute() == 30:
+        if 1 == 1:
+            print('2')
+            # self.showNormal()  # 激活窗口
+            # self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)  # 窗口置顶
+            # self.setWindowFlags(self.windowFlags() & Qt.WindowStaysOnTopHint)  # 窗口取消置顶
+            # title = '【温馨提醒】别忘啦！提交工时'
+            # content = '同事们，别忘了完成工时提交！'
+            # w = Dialog(title, content, self)
+            # w.show()
+            toaster = WindowsToaster('Python')
+            interactableToaster = InteractableWindowsToaster('')
+            remind_toaster = Toast()
+            remind_toaster.text_fields = ['【温馨提醒】别忘啦！提交工时!']
+            remind_toaster.AddAction(ToastButton('前往提交', 'response=submit'))
+            remind_toaster.AddAction(ToastButton('关闭', 'response=close'))
+            remind_toaster.on_activated = self.toast_callback
+
+            interactableToaster.show_toast(remind_toaster)

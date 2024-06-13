@@ -4,11 +4,14 @@ import sys
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel
 
-from qfluentwidgets import ScrollArea, ExpandLayout, OptionsSettingCard, SettingCardGroup, PrimaryPushSettingCard, FluentIcon as FIF, CustomColorSettingCard, setThemeColor, InfoBar, InfoBarPosition
+from qfluentwidgets import ScrollArea, ExpandLayout, OptionsSettingCard, SettingCardGroup, PrimaryPushSettingCard, \
+    FluentIcon as FIF, CustomColorSettingCard, setThemeColor, InfoBar, InfoBarPosition, FolderListSettingCard, \
+    SwitchSettingCard
 
 from app.common.jbl import get_remote_version, update
 from app.common.setting import AUTHOR, VERSION, YEAR, cfg
 from app.common.style_sheet import StyleSheet
+from app.components.file_list_setting_card import FileListSettingCard
 from app.components.update_dialog import UpdateDialog
 
 
@@ -18,6 +21,14 @@ class SettingInterface(ScrollArea):
         super().__init__(parent)
         self.scrollWidget = QWidget()
         self.expandLayout = ExpandLayout(self.scrollWidget)
+
+        self.quickStartGroup = SettingCardGroup('快捷启动', self.scrollWidget)
+        self.quickStartCard = FileListSettingCard(
+            cfg.quickStartFiles,
+            '快捷启动',
+            directory='',
+            parent=self.quickStartGroup,
+        )
 
         self.aboutGroup = SettingCardGroup('关于', self.scrollWidget)
         self.aboutCard = PrimaryPushSettingCard(
@@ -30,20 +41,20 @@ class SettingInterface(ScrollArea):
         )
 
         self.personalGroup = SettingCardGroup('个性化', self.scrollWidget)
-        # self.themeCard = OptionsSettingCard(
-        #     cfg.themeMode,
-        #     FIF.BRUSH,
-        #     '应用主题',
-        #     '调整应用主题',
-        #     texts=['浅色', '深色', '跟随系统'],
-        #     parent=self.personalGroup
-        # )
         self.themeColorCard = CustomColorSettingCard(
             configItem=cfg.themeColor,
             icon=FIF.PALETTE,
             title='主题色',
             content='调整应用主题色',
             parent=self.personalGroup
+        )
+        self.automationCard = SettingCardGroup('自动化脚本', self.scrollWidget)
+        self.USDCard = SwitchSettingCard(
+            icon=FIF.SYNC,
+            title='SVN',
+            content='自动更新USD仓库',
+            parent=self.automationCard,
+            configItem=cfg.USDUpdate
         )
 
         self.__initWidget()
@@ -67,14 +78,18 @@ class SettingInterface(ScrollArea):
         pass
 
     def __initLayout(self):
+        self.quickStartGroup.addSettingCard(self.quickStartCard)
         self.aboutGroup.addSettingCard(self.aboutCard)
         # self.personalGroup.addSettingCard(self.themeCard)
+        self.automationCard.addSettingCard(self.USDCard)
         self.personalGroup.addSettingCard(self.themeColorCard)
 
         self.expandLayout.setSpacing(28)
         self.expandLayout.setContentsMargins(36, 10, 36, 0)
-        self.expandLayout.addWidget(self.aboutGroup)
+        self.expandLayout.addWidget(self.quickStartGroup)
         self.expandLayout.addWidget(self.personalGroup)
+        self.expandLayout.addWidget(self.automationCard)
+        self.expandLayout.addWidget(self.aboutGroup)
 
     def __connectSignalToSlot(self):
         self.themeColorCard.colorChanged.connect(setThemeColor)

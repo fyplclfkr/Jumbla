@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from importlib import reload
 
 from PySide6.QtCore import Qt, QTime, QDateTime, QDate, QTimer
@@ -11,6 +11,7 @@ from app.common.thread import GetProjectThread, GetTasksThread, GetDailyTimelogT
 from app.components import vSpacer, hSpacer
 from .header import Header
 from .list_widget import ProjectTaskList
+from .replace_dialog import ReplaceDialog
 from .sub_widget import SubWidget
 from .submit_dialog import SubmitDialog
 from .taskinfo_widget import TaskInfoWidget
@@ -272,6 +273,9 @@ class TimeLogInterface(QWidget):
         self.subWidget.time_slider.setValue(_end.hour() * 60 + _end.minute())
         if datetime.now().hour < 8:
             self.subWidget.start_time_picker.setEnabled(True)
+            self.subWidget.submit_button.setEnabled(True)
+            self.subWidget.start_time_picker.setDateTime(datetime.now())
+            self.subWidget.end_time_picker.setDateTime(datetime.now())
         else:
             self.subWidget.start_time_picker.setEnabled(False)
 
@@ -357,10 +361,12 @@ class TimeLogInterface(QWidget):
         formatted_time_diff = jbl.calculate_work_time(_start, _end)
         _start_time = _start.toString("yyyy-MM-dd HH:mm:ss")
         _end_time = _end.toString("yyyy-MM-dd HH:mm:ss")
+        # _date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        _date = datetime.now().strftime("%Y-%m-%d")
         _dict = {'db': _db, 'link_id': _link_id,
                  'module': _module, 'module_type': _module_type,
                  'use_time': formatted_time_diff,
-                 'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                 'date': _date,
                  'start_time': _start_time, 'end_time': _end_time, 'text': '项目工时'}
         if any(value == '' for value in _dict.values()):
             InfoBar.warning(
@@ -378,7 +384,7 @@ class TimeLogInterface(QWidget):
                 'project.full_name']
             _task_name = self.project_taskList.taskListWidget.currentItem().data(Qt.UserRole)[
                 'task.url']
-            w = SubmitDialog(_project_name, _task_name, _start_time, _end_time, formatted_time_diff,
+            w = SubmitDialog(_project_name, _task_name, _date, _start_time, _end_time, formatted_time_diff,
                              self.window())
             # 确认提交工时
             if w.exec():
@@ -388,6 +394,8 @@ class TimeLogInterface(QWidget):
                 if w.ignoreCheckBox.isChecked():
                     _dict['use_time'] = '00:00'
                     _dict['text'] = '跳过本时段'
+                if w.yesterdayCheckBox.isChecked():
+                    _dict['date'] = (datetime.strptime(_date, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
                 if jbl.sub_time_log(_dict):  # 提交工时
                     InfoBar.success(
                         title='工时提交成功',
@@ -430,6 +438,9 @@ class TimeLogInterface(QWidget):
                     self.project_taskList.taskListWidget.currentItem().setData(Qt.UserRole, task)
                     self.set_header()
                     self.subWidget.workTimeLabel.setText('本次工时：00:00')
+
+    def on_replace_button_clicked(self):
+        w = ReplaceDialog()
 
     def clear_task_info(self):
         # 清除任务信息

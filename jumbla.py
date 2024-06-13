@@ -3,14 +3,13 @@ import errno
 import os
 import sys
 
-from PySide6.QtCore import QObject, QEvent, QLocale, QLockFile
-from PySide6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtCore import QObject, QEvent, QLockFile
+from PySide6.QtWidgets import QApplication
 
 from app.common.logger import Logger
-from app.common.setting import APP_NAME
 from app.view.main_window import MainWindow
 
-from qfluentwidgets import FluentTranslator, Dialog, MessageBox
+from qfluentwidgets import FluentTranslator, Dialog
 
 
 class JumblaApplication(QApplication):
@@ -26,10 +25,6 @@ class JumblaApplication(QApplication):
             return False
 
 
-def initGlobalData():
-    pass
-
-
 def runApp():
     translator = FluentTranslator()
     app = JumblaApplication(sys.argv)
@@ -41,7 +36,7 @@ def runApp():
         w.show()
         app.exec()
     else:
-        content = """在右下角托盘重新激活程序"""
+        content = """双击悬浮窗重新激活程序"""
         w = Dialog(
             title='程序已打开',
             content=content,

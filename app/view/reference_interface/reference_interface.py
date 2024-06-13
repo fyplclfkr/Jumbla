@@ -9,7 +9,7 @@ from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import TransparentPushButton, FlowLayout, SmoothScrollArea
 
 from app.view.reference_interface.video_card import VideoCard
-from .upload_dialog import UploadDialog
+from upload_dialog import UploadDialog
 
 
 def read_and_query_json(file_path, query_expression):
@@ -48,7 +48,8 @@ class ReferenceInterface(QWidget):
         self.__initLayout()
         self.__initStyle()
 
-        # self.setVideoCard()
+        self.setVideoCard()
+        self.resize(1024, 768)
 
         self.__connectSignalToSlot()
 

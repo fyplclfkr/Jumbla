@@ -3,7 +3,7 @@ import sys
 
 from PySide6.QtCore import Qt, QDateTime, QTime, QDate
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QHBoxLayout
-from qfluentwidgets import BodyLabel, PrimaryPushButton, Slider, DateTimeEdit
+from qfluentwidgets import BodyLabel, PrimaryPushButton, Slider, DateTimeEdit, TimeEdit, TimePicker
 
 
 class SubWidget(QWidget):
@@ -19,6 +19,7 @@ class SubWidget(QWidget):
 
         self.start_time_label = BodyLabel()
         self.start_time_label.setText('开始时间')
+        # self.start_time_picker = DateTimeEdit()
         self.start_time_picker = DateTimeEdit()
         self.start_time_picker.setEnabled(False)
 

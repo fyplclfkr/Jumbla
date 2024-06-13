@@ -9,6 +9,7 @@ class JBLIcon(FluentIconBase, Enum):
 
     DEADLINE = 'Deadline'
     TOOLKIT = 'ToolKit'
+    POWER = 'Power'
 
     def path(self, theme=Theme.AUTO):
         return f':/images/icons/{self.value}_{getIconColor(theme)}.svg'

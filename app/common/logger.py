@@ -28,7 +28,7 @@ class Logger:
         self.logger.add(
             self._getLogFile(),
             rotation="1 day",
-            retention="14 days",
+            retention="10 days",
             level="DEBUG",
             enqueue=True,
             backtrace=True,

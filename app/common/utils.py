@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import enum
+import subprocess
 from types import TracebackType
 from typing import Type
 
@@ -41,3 +42,16 @@ def exceptionFilter(
         return ExceptionFilterMode.SILENT
 
     return ExceptionFilterMode.RAISE_AND_PRINT
+
+
+def svn_usd_update(svn_url, local_path):
+    """
+    检出USD仓库
+    """
+    try:
+        cmd = ['svn', 'checkout', svn_url, local_path]
+        r = subprocess.Popen(cmd, universal_newlines=True, bufsize=1, shell=True, stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
+        JBLLogger.info(r.stdout.read())
+    except subprocess.CalledProcessError as e:
+        JBLLogger.error(f"USD checkout error: {e}")

@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 import sys
-import yaml
 
 from PySide6.QtCore import Qt, QPoint
-from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QApplication, QWidget, QHBoxLayout
-from qfluentwidgets import ImageLabel, RoundMenu, Action, FluentIcon as FIF, MenuAnimationType
 from app.common import resource
+from .svg_label import SvgLabel
 from .float_menu import FloatMenu
 
 
@@ -18,7 +16,11 @@ class FloatWindow(QWidget):
         self.mainLayout = QHBoxLayout(self)
         self.menu = FloatMenu(self)
 
-        self.logoLabel = ImageLabel(":/images/logo.png")
+        # self.logoLabel = QLabel()
+        # self.logoLabel.setPixmap(QPixmap(":/images/logo.svg"))
+
+        self.logoLabel = SvgLabel(':/images/logo.svg')
+        self.logoLabel.setFixedSize(68, 68)
 
         self.__initWidget()
 
@@ -26,8 +28,9 @@ class FloatWindow(QWidget):
         self.setObjectName('FloatWindow')
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
-        # self.resize(150, 60)
-        self.move(1700, 120)
+        self.move(1600, 120)
+
+        self.setAcceptDrops(True)
 
         self.__initLayout()
         self.__initStyle()
