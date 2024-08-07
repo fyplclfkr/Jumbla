@@ -10,7 +10,7 @@ from qfluentwidgets import (qconfig, QConfig, ConfigItem, OptionsConfigItem, Boo
 
 APP_NAME = 'JumblaTools'
 YEAR = 2024
-VERSION = '0.1.6'
+VERSION = '0.1.7'
 AUTHOR = "Jumbla"
 DEBUG = False
 TOOL_ACTION = r'\\nas01\shares\dev\jumbla\tool_action.yaml'

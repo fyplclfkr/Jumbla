@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel
 
 from qfluentwidgets import ScrollArea, ExpandLayout, OptionsSettingCard, SettingCardGroup, PrimaryPushSettingCard, \
     FluentIcon as FIF, CustomColorSettingCard, setThemeColor, InfoBar, InfoBarPosition, FolderListSettingCard, \
-    SwitchSettingCard
+    SwitchSettingCard, setTheme, Theme
 
 from app.common.jbl import get_remote_version, update
 from app.common.setting import AUTHOR, VERSION, YEAR, cfg
@@ -75,7 +75,7 @@ class SettingInterface(ScrollArea):
         self.__connectSignalToSlot()
 
     def __initStyle(self):
-        pass
+        setTheme(Theme.LIGHT)
 
     def __initLayout(self):
         self.quickStartGroup.addSettingCard(self.quickStartCard)

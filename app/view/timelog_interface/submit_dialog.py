@@ -43,13 +43,13 @@ class SubmitDialog(MessageBoxBase):
         self.textLineEdit = PlainTextEdit()
         self.textLineEdit.setPlaceholderText('非项目工时请填写备注')
 
-        self.ignoreCheckBox = CheckBox('忽略本次工时')
-        self.ignoreCheckBox.setToolTip('选中后本次提交不记录工时')
-        self.ignoreCheckBox.clicked.connect(self.onIgnoreCheckBox)
+        # self.ignoreCheckBox = CheckBox('忽略本次工时')
+        # self.ignoreCheckBox.setToolTip('选中后本次提交不记录工时')
+        # self.ignoreCheckBox.clicked.connect(self.onIgnoreCheckBox)
 
-        self.yesterdayCheckBox = CheckBox('过了零点请勾我')
-        self.yesterdayCheckBox.setToolTip('选中后工时改成前一天，通宵加班可以勾上')
-        self.yesterdayCheckBox.clicked.connect(self.onYesterdayCheckBox)
+        # self.yesterdayCheckBox = CheckBox('过了零点请勾我')
+        # self.yesterdayCheckBox.setToolTip('选中后工时改成前一天，通宵加班可以勾上')
+        # self.yesterdayCheckBox.clicked.connect(self.onYesterdayCheckBox)
 
         # 将组件添加到布局中
         self.viewLayout.addWidget(self.titleLabel)
@@ -78,8 +78,8 @@ class SubmitDialog(MessageBoxBase):
         self.bodyLayout.addWidget(self.textLabel, 6, 0)
         self.bodyLayout.addWidget(self.textLineEdit, 7, 0, 1, -1)
 
-        self.bodyLayout.addWidget(self.ignoreCheckBox, 8, 0)
-        self.bodyLayout.addWidget(self.yesterdayCheckBox, 8, 1)
+        # self.bodyLayout.addWidget(self.ignoreCheckBox, 8, 0)
+        # self.bodyLayout.addWidget(self.yesterdayCheckBox, 8, 1)
 
     def onIgnoreCheckBox(self):
         if self.ignoreCheckBox.isChecked():

@@ -3,7 +3,8 @@ import sys
 
 from PySide6.QtCore import Qt, QDateTime, QTime, QDate
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QHBoxLayout
-from qfluentwidgets import BodyLabel, PrimaryPushButton, Slider, DateTimeEdit, TimeEdit, TimePicker
+from qfluentwidgets import BodyLabel, PrimaryPushButton, Slider, DateTimeEdit, TimeEdit, TimePicker, ToolTipFilter, \
+    ToolTipPosition
 
 
 class SubWidget(QWidget):
@@ -38,8 +39,28 @@ class SubWidget(QWidget):
         self.time_slider = Slider(Qt.Horizontal)
 
         self.submit_button = PrimaryPushButton()
-        self.submit_button.setText('提交工时')
+        self.submit_button.setText('打卡')
         self.submit_button.setMinimumHeight(40)
+        self.submit_button.setToolTip('正常提交工时')
+        self.submit_button.installEventFilter(ToolTipFilter(self.submit_button, 50, ToolTipPosition.TOP))
+
+        self.submit_button1 = PrimaryPushButton()
+        self.submit_button1.setText('补卡')
+        self.submit_button1.setMinimumHeight(40)
+        self.submit_button1.setToolTip('补交昨天的工时')
+        self.submit_button1.installEventFilter(ToolTipFilter(self.submit_button1, 50, ToolTipPosition.TOP))
+
+        self.submit_button2 = PrimaryPushButton()
+        self.submit_button2.setText('跳过')
+        self.submit_button2.setMinimumHeight(40)
+        self.submit_button2.setToolTip('跳过本时段，不计算工时')
+        self.submit_button2.installEventFilter(ToolTipFilter(self.submit_button2, 50, ToolTipPosition.TOP))
+
+        self.submit_button3 = PrimaryPushButton()
+        self.submit_button3.setText('零点')
+        self.submit_button3.setMinimumHeight(40)
+        self.submit_button3.setToolTip('正常提交工时')
+        self.submit_button3.installEventFilter(ToolTipFilter(self.submit_button3, 50, ToolTipPosition.TOP))
 
         self.__initLayout()
         self.__initStyle()
@@ -81,7 +102,12 @@ class SubWidget(QWidget):
         self.body3.addWidget(self.add_2H_button)
 
         self.bodyLayout.addWidget(self.time_slider)
-        self.bodyLayout.addWidget(self.submit_button)
+
+        self.body4 = QHBoxLayout()
+        self.bodyLayout.addLayout(self.body4)
+        self.body4.addWidget(self.submit_button)
+        self.body4.addWidget(self.submit_button2)
+        # self.body4.addWidget(self.submit_button3)
 
     def __connectSignalToSlot(self):
         self.time_slider.valueChanged.connect(self.on_slider_changed)

@@ -4,7 +4,7 @@ import subprocess
 import sys
 from datetime import date, datetime
 
-from PySide6.QtCore import QTime
+from PySide6.QtCore import QTime, QDateTime
 from PySide6.QtWidgets import QApplication
 
 from app.common.setting import VERSION
@@ -38,7 +38,10 @@ def get_clock_in_time(user_name):
     """获取上班打卡时间"""
     outputUrl = r'//nas01/shares/dev/jumbla/attendance/'
     try:
-        with open(outputUrl + str(date.today()) + '.json', 'r', encoding='utf-8') as f:
+        _date = datetime.now()
+        if _date.time().hour < 9:
+            _date = _date.replace(day=_date.day - 1)
+        with open(outputUrl + str(_date.date()) + '.json', 'r', encoding='utf-8') as f:
             json_data = json.load(f)
             for item in json_data:
                 if item['姓名'] == user_name:
@@ -102,35 +105,38 @@ def get_my_task(db):
         return []
 
 
-def calculate_work_time(start_time, end_time):
-    # 计算时间差
-    seconds_diff = start_time.secsTo(end_time)
+def calculate_work_time(start_time: QDateTime, end_time: QDateTime) -> str:
+    # 定义休息时间段
+    lunch_start_time = QTime(12, 0)
+    lunch_end_time = QTime(13, 0)
+    dinner_start_time = QTime(18, 30)
+    dinner_end_time = QTime(19, 30)
 
-    if start_time.time().hour() == 12 and end_time.time().hour() == 12:
-        return '00:00'
+    # 计算工作时间
+    total_minutes = 0
+    current_time = start_time
+    while current_time < end_time:
+        next_time = min(current_time.addSecs(60), end_time)
+        # 判断是否为午休时间
+        if QDateTime(current_time.date(), lunch_start_time) <= current_time < QDateTime(current_time.date(),
+                                                                                        lunch_end_time):
+            print("午休时间")
+        # 判断是否为晚餐时间
+        elif QDateTime(current_time.date(), dinner_start_time) <= current_time < QDateTime(current_time.date(),
+                                                                                           dinner_end_time):
+            print("晚餐时间")
+        # 否则为工作时间
+        else:
+            print("工作时间")
+            total_minutes += 1
 
-    if start_time.date() == end_time.date():
-        # 扣除午休时间，同一天
-        if start_time.time().hour() < 12 and end_time.time().hour() >= 13:
-            seconds_diff -= 3600
-        elif start_time.time().hour() == 12 and start_time.time().minute() == 0 and end_time.time().hour() >= 13:
-            seconds_diff -= 3600
-        elif start_time.time().hour() < 12 and end_time.time().hour() == 12 and end_time.time().minute() > 0:
-            seconds_diff -= end_time.time().minute() * 60
-        elif start_time.time().hour() == 12 and start_time.time().minute() > 0 and end_time.time().hour() >= 13:
-            seconds_diff -= (60 - start_time.time().minute()) * 60
-        time_diff = QTime(0, 0).addSecs(seconds_diff)
-        formatted_time_diff = time_diff.toString('hh:mm')
-        return formatted_time_diff
-    else:
-        # 扣除午休时间，跨天
-        if end_time.time().hour() >= 13:
-            seconds_diff -= 3600
-        elif end_time.time().hour() == 12 and end_time.time().minute() > 0:
-            seconds_diff -= end_time.time().minute() * 60
-        time_diff = QTime(0, 0).addSecs(seconds_diff)
-        formatted_time_diff = time_diff.toString('hh:mm')
-        return formatted_time_diff
+        print(next_time)
+        current_time = next_time
+
+    # 返回工作时间
+    hours = total_minutes // 60
+    minutes = total_minutes % 60
+    return f"{hours:02}:{minutes:02}"
 
 
 def sub_time_log(_dict):

@@ -91,7 +91,7 @@ class MainWindow(MSFluentWindow):
         self.switchTo(self.timelog_interface)
 
     def initWindow(self):
-        self.resize(1024, 768)
+        self.resize(960, 768)
         self.setWindowTitle(APP_NAME)
         self.setWindowIcon(QIcon(':/images/logo.svg'))
 

@@ -9,10 +9,8 @@ from qfluentwidgets import MessageBoxBase, StrongBodyLabel, PlainTextEdit, BodyL
 class ReplaceDialog(MessageBoxBase):
     """ Custom message box """
 
-    def __init__(self, projectName: str, taskName: str, date: str, startTime: str, endTime: str, useTime: str,
-                 parent=None):
+    def __init__(self, projectName: str, taskName: str, date: str, parent=None):
         super().__init__(parent)
-        self.useTime = useTime
         self.date = date
         self.previous_day = (datetime.strptime(self.date, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
 
