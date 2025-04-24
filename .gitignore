@@ -2,6 +2,7 @@
 /app/AppData/
 /tests
 /.idea
+/.trae
 /config
 /jumbla.build
 /jumbla.dist

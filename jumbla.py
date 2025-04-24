@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import errno
-import os
 import sys
 
 from PySide6.QtCore import QObject, QEvent, QLockFile
